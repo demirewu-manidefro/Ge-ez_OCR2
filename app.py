@@ -1,12 +1,23 @@
-﻿from flask import Flask, request, render_template, jsonify
+﻿from flask import Flask, request, render_template, jsonify, send_file
 from transformers import TrOCRProcessor, VisionEncoderDecoderModel
 from PIL import Image
 import io
 import cv2
 import numpy as np
 import os
+from reportlab.lib.pagesizes import letter
+from reportlab.platypus import SimpleDocTemplate, Paragraph
+from reportlab.lib.styles import getSampleStyleSheet
 
 app = Flask(__name__)
+
+# Disable browser caching
+@app.after_request
+def add_header(response):
+    response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, post-check=0, pre-check=0, max-age=0'
+    response.headers['Pragma'] = 'no-cache'
+    response.headers['Expires'] = '-1'
+    return response
 
 model_dir = "./geez_model_web_lite"
 processor = TrOCRProcessor.from_pretrained(model_dir)
@@ -56,6 +67,16 @@ def index():
     return render_template("index.html")
 
 
+@app.route("/about")
+def about():
+    return render_template("about.html")
+
+
+@app.route("/github")
+def github():
+    return render_template("github.html")
+
+
 @app.route("/predict", methods=["POST"])
 def predict():
     try:
@@ -83,6 +104,35 @@ def predict():
         return jsonify({"text": final_text})
     except Exception as e:
         return jsonify({"error": str(e)})
+
+
+@app.route("/download_pdf", methods=["POST"])
+def download_pdf():
+    try:
+        data = request.get_json()
+        text = data.get("text", "")
+        
+        buffer = io.BytesIO()
+        doc = SimpleDocTemplate(buffer, pagesize=letter)
+        styles = getSampleStyleSheet()
+        story = []
+        
+        lines = text.split("\n")
+        for line in lines:
+            p = Paragraph(line, styles["BodyText"])
+            story.append(p)
+        
+        doc.build(story)
+        buffer.seek(0)
+        
+        return send_file(
+            buffer,
+            as_attachment=True,
+            download_name="geez_ocr_output.pdf",
+            mimetype="application/pdf"
+        )
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 if __name__ == "__main__":
