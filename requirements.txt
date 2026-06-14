@@ -1,4 +1,7 @@
 flask
+flask-sqlalchemy
+psycopg2-binary
+python-dotenv
 transformers
 torch
 pillow
@@ -6,4 +9,3 @@ safetensors
 opencv-python
 numpy
 reportlab
-fpdf2
