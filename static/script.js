@@ -2,17 +2,20 @@ document.addEventListener('DOMContentLoaded', () => {
     // ========== DOM Elements ==========
     const fileInput = document.getElementById('fileInput');
     const uploadZone = document.getElementById('uploadZone');
+    const browseBtn = document.getElementById('browseBtn');
     const uploadBtn = document.getElementById('uploadBtn');
     const preview = document.getElementById('preview');
     const resultImage = document.getElementById('resultImage');
     const result = document.getElementById('result');
     const clearBtn = document.getElementById('clearBtn');
+    const clearAllBtn = document.getElementById('clearAllBtn');
     const copyBtn = document.getElementById('copyBtn');
     const downloadTextBtn = document.getElementById('downloadTextBtn');
     const downloadBtn = document.getElementById('downloadBtn');
     const themeToggle = document.getElementById('themeToggle');
     const loadingSection = document.getElementById('loadingSection');
     const resultsSection = document.getElementById('resultsSection');
+    const convertBtnGroup = document.getElementById('convertBtnGroup');
     const progressFill = document.getElementById('progressFill');
     const message = document.getElementById('message');
 
@@ -53,8 +56,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ========== Upload Zone ==========
-    if (uploadZone && fileInput) {
+    if (uploadZone && fileInput && browseBtn) {
         uploadZone.addEventListener('click', () => fileInput.click());
+        browseBtn.addEventListener('click', () => fileInput.click());
 
         uploadZone.addEventListener('dragover', (e) => {
             e.preventDefault();
@@ -92,7 +96,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 preview.style.display = 'block';
             }
             if (resultImage) resultImage.src = event.target.result;
+            if (convertBtnGroup) convertBtnGroup.style.display = 'flex';
             if (resultsSection) resultsSection.style.display = 'none';
+            if (loadingSection) loadingSection.style.display = 'none';
+            hideMessage();
         };
         reader.readAsDataURL(file);
     }
@@ -111,6 +118,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Show loading UI
             if (loadingSection) loadingSection.style.display = 'block';
             if (resultsSection) resultsSection.style.display = 'none';
+            if (convertBtnGroup) convertBtnGroup.style.display = 'none';
             uploadBtn.disabled = true;
             hideMessage();
             
@@ -167,17 +175,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ========== Button Actions ==========
     if (clearBtn) {
-        clearBtn.addEventListener('click', () => {
-            if (fileInput) fileInput.value = '';
-            if (preview) preview.style.display = 'none';
-            if (resultsSection) resultsSection.style.display = 'none';
-            if (loadingSection) loadingSection.style.display = 'none';
-            if (result) result.value = '';
-            currentText = '';
-            if (progressFill) progressFill.style.width = '0';
-            resetSteps();
-            hideMessage();
-        });
+        clearBtn.addEventListener('click', resetToUpload);
+    }
+    
+    if (clearAllBtn) {
+        clearAllBtn.addEventListener('click', resetToUpload);
+    }
+
+    function resetToUpload() {
+        if (fileInput) fileInput.value = '';
+        if (preview) preview.style.display = 'none';
+        if (resultsSection) resultsSection.style.display = 'none';
+        if (loadingSection) loadingSection.style.display = 'none';
+        if (convertBtnGroup) convertBtnGroup.style.display = 'none';
+        if (result) result.value = '';
+        currentText = '';
+        if (progressFill) progressFill.style.width = '0';
+        resetSteps();
+        hideMessage();
     }
 
     if (copyBtn) {
