@@ -109,20 +109,40 @@ def predict():
 @app.route("/download_pdf", methods=["POST"])
 def download_pdf():
     try:
+        from reportlab.pdfgen import canvas
+        from reportlab.pdfbase import pdfmetrics
+        from reportlab.pdfbase.cidfonts import UnicodeCIDFont
+        from reportlab.lib.pagesizes import letter
+        
         data = request.get_json()
         text = data.get("text", "")
         
         buffer = io.BytesIO()
-        doc = SimpleDocTemplate(buffer, pagesize=letter)
-        styles = getSampleStyleSheet()
-        story = []
+        c = canvas.Canvas(buffer, pagesize=letter)
+        width, height = letter
         
+        # Register a Unicode font that supports more characters
+        pdfmetrics.registerFont(UnicodeCIDFont('Helvetica'))
+        
+        # Write title
+        c.setFont('Helvetica-Bold', 16)
+        c.drawString(100, height - 50, "Ge'ez OCR Output")
+        
+        # Write text lines
+        c.setFont('Helvetica', 12)
+        y = height - 80
+        line_height = 18
         lines = text.split("\n")
-        for line in lines:
-            p = Paragraph(line, styles["BodyText"])
-            story.append(p)
         
-        doc.build(story)
+        for line in lines:
+            if y < 50:
+                c.showPage()
+                y = height - 50
+                c.setFont('Helvetica', 12)
+            c.drawString(100, y, line)
+            y -= line_height
+        
+        c.save()
         buffer.seek(0)
         
         return send_file(
