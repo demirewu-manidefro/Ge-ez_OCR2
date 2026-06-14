@@ -1,10 +1,12 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
+from flask_login import LoginManager
 from dotenv import load_dotenv
 import os
 
 # Initialize extensions
 db = SQLAlchemy()
+login_manager = LoginManager()
 
 def create_app(config_class=None):
     # Load environment variables
@@ -33,6 +35,16 @@ def create_app(config_class=None):
 
     # Initialize extensions
     db.init_app(app)
+    login_manager.init_app(app)
+    login_manager.login_view = 'main.login'
+    login_manager.login_message = 'Please log in to access this page.'
+    login_manager.login_message_category = 'error'
+
+    # User loader
+    from app.models import User
+    @login_manager.user_loader
+    def load_user(user_id):
+        return User.query.get(int(user_id))
 
     # Import and register blueprints
     from app.routes import main
@@ -41,5 +53,15 @@ def create_app(config_class=None):
     # Create tables (in production you'd use migrations)
     with app.app_context():
         db.create_all()
+        try:
+            inspector = db.inspect(db.engine)
+            columns = [c['name'] for c in inspector.get_columns('users')]
+            if 'role' not in columns:
+                db.session.execute(db.text("ALTER TABLE users ADD COLUMN role VARCHAR(50) NOT NULL DEFAULT 'user'"))
+                db.session.commit()
+                print("Migration: Added 'role' column to 'users' table.")
+        except Exception as e:
+            db.session.rollback()
+            print(f"Migration error: {e}")
 
     return app
