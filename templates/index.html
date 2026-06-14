@@ -22,9 +22,25 @@
             <button class="theme-toggle" id="themeToggle">
                 <i class="fas fa-moon"></i>
             </button>
-            <div class="profile-icon">
-                <i class="fas fa-user"></i>
-            </div>
+            {% if current_user.is_authenticated %}
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <div class="profile-icon" title="{{ current_user.username }}">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <a href="{{ url_for('main.logout') }}" class="btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem;">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </a>
+                </div>
+            {% else %}
+                <div style="display: flex; gap: 0.75rem;">
+                    <a href="{{ url_for('main.login') }}" class="btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem;">
+                        <i class="fas fa-sign-in-alt"></i> Login
+                    </a>
+                    <a href="{{ url_for('main.register') }}" class="btn-primary" style="padding: 0.5rem 1rem; font-size: 0.9rem;">
+                        <i class="fas fa-user-plus"></i> Register
+                    </a>
+                </div>
+            {% endif %}
         </div>
     </nav>
 
@@ -35,9 +51,21 @@
             <button class="btn-secondary" id="fixOldDataBtn">
                 <i class="fas fa-wrench"></i> Fix Old Data
             </button>
-            <button class="btn-primary" id="downloadDatasetBtn">
-                <i class="fas fa-download"></i> Download Dataset
-            </button>
+            {% if current_user.is_authenticated %}
+                {% if current_user.role == 'manager' %}
+                    <button class="btn-primary" id="downloadDatasetBtn">
+                        <i class="fas fa-download"></i> Download Dataset
+                    </button>
+                {% else %}
+                    <button class="btn-primary btn-disabled" id="downloadDatasetBtnDisabled" disabled title="Only managers can download the dataset" style="background: linear-gradient(135deg, #64748B, #475569); cursor: not-allowed; transform: none; box-shadow: none; opacity: 0.7;">
+                        <i class="fas fa-lock"></i> Download Dataset (Manager Only)
+                    </button>
+                {% endif %}
+            {% else %}
+                <a href="{{ url_for('main.login') }}" class="btn-primary">
+                    <i class="fas fa-download"></i> Download Dataset (Login Required)
+                </a>
+            {% endif %}
         </div>
     </div>
 

@@ -1,14 +1,31 @@
-from flask import Blueprint, request, jsonify, current_app
+from flask import Blueprint, request, jsonify, current_app, render_template, redirect, url_for, flash
 from werkzeug.utils import secure_filename
+from flask_login import login_user, logout_user, login_required, current_user
 import os
 import uuid
 from PIL import Image
 import numpy as np
 import cv2
 from app import db
-from app.models import OCRDataset
+from app.models import OCRDataset, User
 
 bp = Blueprint('main', __name__)
+
+@bp.before_app_request
+def require_login():
+    allowed_endpoints = ['main.login', 'main.register', 'static']
+    if not current_user.is_authenticated:
+        if request.endpoint and request.endpoint not in allowed_endpoints:
+            # Check if it's an API request
+            if (request.path.startswith('/upload') or 
+                request.path.startswith('/save_label') or 
+                request.path.startswith('/dataset') or 
+                request.path.startswith('/predict') or 
+                request.path.startswith('/download_pdf') or 
+                request.path.startswith('/fix_old_data') or
+                request.headers.get('X-Requested-With') == 'XMLHttpRequest'):
+                return jsonify({'error': 'Authentication required. Please log in.'}), 401
+            return redirect(url_for('main.login', next=request.url))
 
 # Keep our existing OCR model loaded globally for reuse
 processor = None
@@ -53,18 +70,74 @@ def segment_lines(image):
 
 @bp.route('/')
 def index():
-    from flask import render_template
-    return render_template('index.html')
+    return render_template('index.html', current_user=current_user)
 
 @bp.route('/about')
 def about():
-    from flask import render_template
-    return render_template('about.html')
+    return render_template('about.html', current_user=current_user)
 
 @bp.route('/github')
 def github():
-    from flask import render_template
-    return render_template('github.html')
+    return render_template('github.html', current_user=current_user)
+
+@bp.route('/login', methods=['GET', 'POST'])
+def login():
+    if current_user.is_authenticated:
+        return redirect(url_for('main.index'))
+    
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+        user = User.query.filter_by(username=username).first()
+        
+        if user and user.check_password(password):
+            login_user(user)
+            next_page = request.args.get('next')
+            return redirect(next_page or url_for('main.index'))
+        else:
+            flash('Invalid username or password', 'error')
+    
+    return render_template('login.html', current_user=current_user)
+
+@bp.route('/register', methods=['GET', 'POST'])
+def register():
+    if current_user.is_authenticated:
+        return redirect(url_for('main.index'))
+    
+    if request.method == 'POST':
+        username = request.form.get('username')
+        email = request.form.get('email')
+        password = request.form.get('password')
+        
+        # Check if username already exists
+        if User.query.filter_by(username=username).first():
+            flash('Username already taken', 'error')
+            return render_template('register.html', current_user=current_user)
+        
+        # Check if email already exists
+        if User.query.filter_by(email=email).first():
+            flash('Email already registered', 'error')
+            return render_template('register.html', current_user=current_user)
+        
+        # Create new user
+        role = request.form.get('role', 'user')
+        if role not in ['user', 'manager']:
+            role = 'user'
+        user = User(username=username, email=email, role=role)
+        user.set_password(password)
+        db.session.add(user)
+        db.session.commit()
+        
+        flash('Registration successful! Please log in.', 'success')
+        return redirect(url_for('main.login'))
+    
+    return render_template('register.html', current_user=current_user)
+
+@bp.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for('main.index'))
 
 @bp.route('/upload', methods=['POST'])
 def upload_image():
@@ -188,7 +261,14 @@ def fix_old_data():
         return jsonify({'error': str(e)}), 500
 
 @bp.route('/download_dataset', methods=['GET'])
+@login_required
 def download_dataset():
+    if current_user.role != 'manager':
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest' or 'application/json' in request.headers.get('Accept', ''):
+            return jsonify({'error': 'Access denied. Only managers can download the dataset.'}), 403
+        flash('Access denied. Only managers are allowed to download the dataset.', 'error')
+        return redirect(url_for('main.index'))
+        
     import zipfile
     import io
     import os
