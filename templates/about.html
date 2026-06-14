@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ge'ez OCR - About</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <nav>
+        <ul>
+            <li><a href="/">Home</a></li>
+            <li><a href="/about">About</a></li>
+            <li><a href="/github">GitHub</a></li>
+        </ul>
+    </nav>
+
+    <main>
+        <div class="card about-content">
+            <h1><i class="fas fa-info-circle"></i> About Ge'ez OCR</h1>
+            
+            <h2>Project Overview</h2>
+            <p>This project aims to digitize Ge'ez manuscripts using modern AI technology. Ge'ez is an ancient Semitic language used in Ethiopian and Eritrean religious and historical texts.</p>
+
+            <h2>How It Works</h2>
+            <ul>
+                <li>Uses a fine-tuned TrOCR (Transformer-based Optical Character Recognition) model</li>
+                <li>Supports full-page recognition by segmenting pages into individual lines</li>
+                <li>Each line is processed separately for improved accuracy</li>
+                <li>Results are combined with proper line breaks</li>
+            </ul>
+
+            <h2>Technologies Used</h2>
+            <ul>
+                <li><strong>Flask:</strong> Web framework for the application</li>
+                <li><strong>PyTorch:</strong> Deep learning framework</li>
+                <li><strong>Transformers:</strong> HuggingFace library for state-of-the-art NLP models</li>
+                <li><strong>OpenCV:</strong> Computer vision library for image preprocessing and line segmentation</li>
+                <li><strong>ReportLab:</strong> PDF generation</li>
+            </ul>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 Ge'ez OCR Project. All rights reserved.</p>
+    </footer>
+</body>
+</html>
