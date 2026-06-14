@@ -9,8 +9,15 @@ db = SQLAlchemy()
 def create_app(config_class=None):
     # Load environment variables
     load_dotenv()
+    
+    import os
+    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-    app = Flask(__name__)
+    app = Flask(
+        __name__,
+        template_folder=os.path.join(base_dir, 'templates'),
+        static_folder=os.path.join(base_dir, 'static')
+    )
 
     # Configuration
     app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'dev-secret-key-change-me')
