@@ -3,6 +3,7 @@ const preview = document.getElementById('preview');
 const uploadBtn = document.getElementById('uploadBtn');
 const clearBtn = document.getElementById('clearBtn');
 const copyBtn = document.getElementById('copyBtn');
+const downloadTextBtn = document.getElementById('downloadTextBtn');
 const downloadBtn = document.getElementById('downloadBtn');
 const resultDiv = document.getElementById('result');
 const resultSection = document.getElementById('resultSection');
@@ -102,6 +103,19 @@ copyBtn.addEventListener('click', async () => {
     } catch (error) {
         showMessage('Failed to copy text', 'error');
     }
+});
+
+downloadTextBtn.addEventListener('click', () => {
+    const blob = new Blob([currentText], { type: 'text/plain;charset=utf-8' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'geez_ocr_output.txt';
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+    showMessage('Text file downloaded successfully!', 'success');
 });
 
 downloadBtn.addEventListener('click', async () => {

@@ -6,3 +6,4 @@ safetensors
 opencv-python
 numpy
 reportlab
+fpdf2
