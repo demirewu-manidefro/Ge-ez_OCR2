@@ -1,4 +1,4 @@
-﻿from flask import Flask, request, render_template, jsonify, send_file
+from flask import Flask, request, render_template, jsonify, send_file
 from transformers import TrOCRProcessor, VisionEncoderDecoderModel
 from PIL import Image
 import io
@@ -6,8 +6,8 @@ import cv2
 import numpy as np
 import os
 from reportlab.lib.pagesizes import letter
-from reportlab.platypus import SimpleDocTemplate, Paragraph
 from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 
 app = Flask(__name__)
 
@@ -109,40 +109,33 @@ def predict():
 @app.route("/download_pdf", methods=["POST"])
 def download_pdf():
     try:
-        from reportlab.pdfgen import canvas
-        from reportlab.pdfbase import pdfmetrics
-        from reportlab.pdfbase.cidfonts import UnicodeCIDFont
-        from reportlab.lib.pagesizes import letter
-        
+        # Get text from request
         data = request.get_json()
         text = data.get("text", "")
         
+        # Create PDF in memory
         buffer = io.BytesIO()
-        c = canvas.Canvas(buffer, pagesize=letter)
-        width, height = letter
+        doc = SimpleDocTemplate(buffer, pagesize=letter)
+        styles = getSampleStyleSheet()
+        story = []
         
-        # Register a Unicode font that supports more characters
-        pdfmetrics.registerFont(UnicodeCIDFont('Helvetica'))
+        # Add title
+        title = Paragraph("<b>Ge'ez OCR Output</b>", styles["Title"])
+        story.append(title)
+        story.append(Spacer(1, 12))
         
-        # Write title
-        c.setFont('Helvetica-Bold', 16)
-        c.drawString(100, height - 50, "Ge'ez OCR Output")
-        
-        # Write text lines
-        c.setFont('Helvetica', 12)
-        y = height - 80
-        line_height = 18
+        # Add lines with simple text (escape any HTML entities)
         lines = text.split("\n")
-        
         for line in lines:
-            if y < 50:
-                c.showPage()
-                y = height - 50
-                c.setFont('Helvetica', 12)
-            c.drawString(100, y, line)
-            y -= line_height
+            if line.strip():
+                # Escape special characters for ReportLab Paragraph
+                safe_line = line.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
+                p = Paragraph(safe_line, styles["BodyText"])
+                story.append(p)
+            else:
+                story.append(Spacer(1, 12))
         
-        c.save()
+        doc.build(story)
         buffer.seek(0)
         
         return send_file(
@@ -152,6 +145,7 @@ def download_pdf():
             mimetype="application/pdf"
         )
     except Exception as e:
+        print(f"PDF Error: {str(e)}")  # Print to server log
         return jsonify({"error": str(e)}), 500
 
 
