@@ -3,110 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Geez OCR Demo</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 800px;
-            margin: 50px auto;
-            padding: 20px;
-        }
-        h1 {
-            text-align: center;
-        }
-        .container {
-            border: 1px solid #ddd;
-            padding: 20px;
-            border-radius: 8px;
-        }
-        input[type="file"] {
-            margin: 10px 0;
-        }
-        button {
-            background-color: #4CAF50;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #45a049;
-        }
-        #result {
-            margin-top: 20px;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            min-height: 100px;
-        }
-        #preview {
-            margin-top: 20px;
-            max-width: 100%;
-            max-height: 300px;
-            display: none;
-        }
-    </style>
+    <title>Ge'ez OCR - Home</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <h1>Geez OCR Demo</h1>
-    <div class="container">
-        <input type="file" id="fileInput" accept="image/*">
-        <br>
-        <button id="uploadBtn">Convert to Text</button>
-        <br>
-        <img id="preview" alt="Image Preview">
-        <div id="result"></div>
-    </div>
+    <nav>
+        <ul>
+            <li><a href="/">Home</a></li>
+            <li><a href="/about">About</a></li>
+            <li><a href="/github">GitHub</a></li>
+        </ul>
+    </nav>
 
-    <script>
-        const fileInput = document.getElementById('fileInput');
-        const preview = document.getElementById('preview');
-        const uploadBtn = document.getElementById('uploadBtn');
-        const resultDiv = document.getElementById('result');
+    <main>
+        <header>
+            <h1><i class="fas fa-file-alt"></i> Ge'ez OCR</h1>
+            <p>Digitize Ge'ez manuscripts with AI-powered text recognition</p>
+        </header>
 
-        fileInput.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                    preview.src = event.target.result;
-                    preview.style.display = 'block';
-                };
-                reader.readAsDataURL(file);
-            }
-        });
+        <div class="card">
+            <div class="upload-area" id="uploadArea">
+                <i class="fas fa-cloud-upload-alt"></i>
+                <p>Drag & drop your image here or click to browse</p>
+                <input type="file" id="fileInput" accept="image/*">
+            </div>
 
-        uploadBtn.addEventListener('click', async () => {
-            const file = fileInput.files[0];
-            if (!file) {
-                alert('Please select an image file first!');
-                return;
-            }
+            <img id="preview" alt="Image Preview">
 
-            const formData = new FormData();
-            formData.append('file', file);
+            <div class="button-group">
+                <button class="btn-primary" id="uploadBtn"><i class="fas fa-magic"></i> Convert to Text</button>
+                <button class="btn-secondary" id="clearBtn"><i class="fas fa-trash"></i> Clear</button>
+            </div>
 
-            try {
-                uploadBtn.textContent = 'Processing...';
-                uploadBtn.disabled = true;
-                const response = await fetch('/predict', {
-                    method: 'POST',
-                    body: formData
-                });
-                const data = await response.json();
-                if (data.error) {
-                    resultDiv.innerHTML = `<p style="color: red;">Error: ${data.error}</p>`;
-                } else {
-                    resultDiv.innerHTML = `<h3>Recognized Text:</h3><p>${data.text}</p>`;
-                }
-            } catch (error) {
-                resultDiv.innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
-            } finally {
-                uploadBtn.textContent = 'Convert to Text';
-                uploadBtn.disabled = false;
-            }
-        });
-    </script>
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Processing image...</p>
+            </div>
+
+            <div class="message" id="message"></div>
+
+            <div class="result-section" id="resultSection" style="display: none;">
+                <h3><i class="fas fa-font"></i> Recognized Text</h3>
+                <textarea id="result" readonly></textarea>
+                <div class="button-group" style="margin-top: 1rem;">
+                    <button class="btn-success" id="copyBtn"><i class="fas fa-copy"></i> Copy Text</button>
+                    <button class="btn-primary" id="downloadBtn"><i class="fas fa-file-pdf"></i> Download PDF</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 Ge'ez OCR Project. All rights reserved.</p>
+    </footer>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>
