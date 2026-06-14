@@ -45,28 +45,111 @@
     </nav>
 
     <div class="hero">
-        <h1>About Ge'ez OCR AI</h1>
-        <p>Digitizing cultural heritage with cutting-edge AI technology</p>
+        <h1>Ge'ez Manuscript OCR System</h1>
+        <p>A Deep Learning Approach for Handwritten Ethiopic Script Recognition</p>
     </div>
 
-    <div class="upload-card" style="text-align: left;">
-        <h2 style="margin-bottom: 1.5rem; color: var(--text-primary);">Project Overview</h2>
-        <p style="margin-bottom: 1rem;">This project aims to digitize Ge'ez manuscripts using modern AI technology. Ge'ez is an ancient Semitic language used in Ethiopian and Eritrean religious and historical texts.</p>
+    <div class="upload-card" style="text-align: left; max-width: 1000px;">
+        <h2 style="margin-bottom: 1.5rem; color: var(--text-primary); font-size: 1.8rem;">About the Project</h2>
+        <p style="margin-bottom: 1.5rem; font-size: 1.05rem; line-height: 1.7;">Ge'ez is one of the world's oldest scripts, originating from the Aksumite civilization and serving as the liturgical language of the Ethiopian and Eritrean Orthodox Churches. Millions of handwritten manuscripts are preserved in monasteries across Lalibela and Lake Tana — yet these culturally and historically invaluable documents are rapidly deteriorating.</p>
+        <p style="margin-bottom: 2rem; font-size: 1.05rem; line-height: 1.7;">This project builds a practical deep learning OCR system that converts scanned Ge'ez manuscript images into editable digital text, making these irreplaceable documents searchable, preservable, and accessible to scholars, churches, and communities worldwide.</p>
         
-        <h2 style="margin: 2rem 0 1rem; color: var(--text-primary);">How It Works</h2>
-        <ul style="list-style-type: disc; padding-left: 2rem; margin-bottom: 1rem;">
-            <li>Uses a fine-tuned TrOCR (Transformer-based Optical Character Recognition) model</li>
-            <li>Supports full-page recognition by segmenting pages into individual lines</li>
-            <li>Each line is processed separately for improved accuracy</li>
-            <li>Results are combined with proper line breaks</li>
+        <div class="info-card">
+            <h3>Why It's Challenging</h3>
+            <p>Recognizing handwritten Ge'ez is uniquely difficult due to the characteristics of the Ethiopic Abugida script:</p>
+            <ul class="feature-list" style="margin-bottom: 0;">
+                <li>Over 238 characters with high visual similarity</li>
+                <li>Up to 7 vowel forms per consonant</li>
+                <li>Significant variation in handwriting styles across different scribes and historical periods</li>
+                <li>Severe degradation, noise, and geometric distortions in ancient manuscripts</li>
+                <li>No existing practical OCR system designed specifically for handwritten Ge'ez</li>
+            </ul>
+        </div>
+
+        <h2 style="margin: 2.5rem 0 1.5rem; color: var(--text-primary); font-size: 1.8rem;">Our Solution — Hybrid STN-ResNet-CRNN</h2>
+        <p style="margin-bottom: 1.5rem; font-size: 1.05rem; line-height: 1.7;">We designed and trained a hybrid deep learning architecture that combines four components working together in a pipeline:</p>
+        <ul class="feature-list">
+            <li><strong>STN (Spatial Transformer Network)</strong> — Corrects geometric distortions such as rotation, skew, and perspective that are common in ancient handwritten manuscripts.</li>
+            <li><strong>ResNet (Residual Network Backbone)</strong> — Extracts deep and discriminative visual features from manuscript images while preserving fine character details.</li>
+            <li><strong>Bi-LSTM (Bidirectional LSTM)</strong> — Captures sequential dependencies in text by learning context from both forward and backward directions simultaneously.</li>
+            <li><strong>CTC (Connectionist Temporal Classification)</strong> — Enables end-to-end training and decoding without requiring explicit character-level segmentation.</li>
         </ul>
-        
-        <h2 style="margin: 2rem 0 1rem; color: var(--text-primary);">Technologies Used</h2>
-        <ul style="list-style-type: disc; padding-left: 2rem;">
-            <li><strong>Flask</strong>: Web framework for the application</li>
-            <li><strong>PyTorch</strong>: Deep learning framework</li>
-            <li><strong>Transformers</strong>: HuggingFace library for state-of-the-art NLP models</li>
-            <li><strong>OpenCV</strong>: Computer vision library for image preprocessing and line segmentation</li>
+
+        <h2 style="margin: 2.5rem 0 1.5rem; color: var(--text-primary); font-size: 1.8rem;">Model Comparison Results</h2>
+        <div style="overflow-x: auto;">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Metric</th>
+                        <th>TrOCR (16K Noisy)</th>
+                        <th>TrOCR (9K Clean)</th>
+                        <th class="highlight-cell">Hybrid STN-ResNet-CRNN</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Character Error Rate</td>
+                        <td>17.17%</td>
+                        <td>6.95%</td>
+                        <td class="highlight-cell">5.72%</td>
+                    </tr>
+                    <tr>
+                        <td>Character Accuracy</td>
+                        <td>82.83%</td>
+                        <td>93.05%</td>
+                        <td class="highlight-cell">94.28%</td>
+                    </tr>
+                    <tr>
+                        <td>F1-Score</td>
+                        <td>84.20%</td>
+                        <td>92.10%</td>
+                        <td class="highlight-cell">94.63%</td>
+                    </tr>
+                    <tr>
+                        <td>Precision</td>
+                        <td>—</td>
+                        <td>—</td>
+                        <td class="highlight-cell">93.9%</td>
+                    </tr>
+                    <tr>
+                        <td>Recall</td>
+                        <td>—</td>
+                        <td>—</td>
+                        <td class="highlight-cell">94.1%</td>
+                    </tr>
+                    <tr>
+                        <td>Model Size</td>
+                        <td>1.3 GB</td>
+                        <td>1.3 GB</td>
+                        <td class="highlight-cell">48 MB</td>
+                    </tr>
+                    <tr>
+                        <td>Training Time</td>
+                        <td>12 hours</td>
+                        <td>8 hours</td>
+                        <td class="highlight-cell">6 hours</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="info-card">
+            <h3>Key Takeaways</h3>
+            <ul class="feature-list" style="margin-bottom: 0;">
+                <li>The Hybrid STN-ResNet-CRNN outperforms TrOCR in every metric</li>
+                <li>It is 27x smaller and 2x faster to train than TrOCR</li>
+                <li>Data quality matters more than data quantity — the clean 9K dataset beat the noisy 16K dataset</li>
+                <li>The STN component effectively handles geometric distortions unique to ancient manuscripts</li>
+            </ul>
+        </div>
+
+        <h2 style="margin: 2.5rem 0 1.5rem; color: var(--text-primary); font-size: 1.8rem;">Dataset</h2>
+        <p style="margin-bottom: 1.5rem; font-size: 1.05rem; line-height: 1.7;">Primary data was collected from Debre Birhan Debre Tesbha Kidus Giyorgis Monastery.</p>
+        <ul class="feature-list">
+            <li>157 high-resolution manuscript pages scanned</li>
+            <li>16,036 initial line-level image-label pairs generated</li>
+            <li>9,036 high-quality images selected after careful filtering for noise and labeling accuracy</li>
+            <li>Preprocessing included CLAHE enhancement, geometric normalization, Unicode standardization, and data augmentation</li>
         </ul>
     </div>
 
