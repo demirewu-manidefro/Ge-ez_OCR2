@@ -168,6 +168,25 @@ def get_dataset():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@bp.route('/fix_old_data', methods=['GET'])
+def fix_old_data():
+    try:
+        # Update all entries where ground_truth is NULL to use predicted_text
+        entries_to_fix = OCRDataset.query.filter(OCRDataset.ground_truth.is_(None)).all()
+        for entry in entries_to_fix:
+            entry.ground_truth = entry.predicted_text
+        
+        db.session.commit()
+        
+        return jsonify({
+            'message': f'Fixed {len(entries_to_fix)} old entries!',
+            'fixed_count': len(entries_to_fix)
+        }), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
 @bp.route('/download_dataset', methods=['GET'])
 def download_dataset():
     import zipfile

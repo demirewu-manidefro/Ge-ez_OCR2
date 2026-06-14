@@ -291,12 +291,29 @@ document.addEventListener('DOMContentLoaded', () => {
                 const url = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = 'geez_ocr_dataset.csv';
+                a.download = 'geez_ocr_dataset.zip';
                 document.body.appendChild(a);
                 a.click();
                 window.URL.revokeObjectURL(url);
                 document.body.removeChild(a);
                 showMessage('Dataset downloaded successfully!', 'success');
+            } catch (error) {
+                showMessage(error.message, 'error');
+            }
+        });
+    }
+
+    if (document.getElementById('fixOldDataBtn')) {
+        document.getElementById('fixOldDataBtn').addEventListener('click', async () => {
+            try {
+                const response = await fetch('/fix_old_data');
+                
+                if (!response.ok) {
+                    throw new Error('Failed to fix old data');
+                }
+                
+                const result = await response.json();
+                showMessage(`${result.message}`, 'success');
             } catch (error) {
                 showMessage(error.message, 'error');
             }
