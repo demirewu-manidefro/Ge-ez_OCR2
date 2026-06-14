@@ -5,7 +5,9 @@ import io
 import cv2
 import numpy as np
 import os
-from fpdf import FPDF
+from reportlab.lib.pagesizes import letter
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet
 
 app = Flask(__name__)
 
@@ -107,36 +109,32 @@ def predict():
 @app.route("/download_pdf", methods=["POST"])
 def download_pdf():
     try:
-        # Get text from request
         data = request.get_json()
         text = data.get("text", "")
         
-        # Create PDF using FPDF2 with Unicode support
-        pdf = FPDF()
-        pdf.add_page()
-        
-        # Use built-in Unicode font
-        pdf.set_font("Helvetica", size=12)
+        buffer = io.BytesIO()
+        doc = SimpleDocTemplate(buffer, pagesize=letter)
+        styles = getSampleStyleSheet()
+        story = []
         
         # Add title
-        pdf.set_font("Helvetica", "B", 16)
-        pdf.cell(200, 10, txt="Ge'ez OCR Output", ln=True, align="C")
-        pdf.ln(10)
+        title = Paragraph("<b>Ge'ez OCR Output</b>", styles["Title"])
+        story.append(title)
+        story.append(Spacer(1, 12))
         
-        # If Helvetica doesn't support Ge'ez, let's use a simpler approach:
-        # Write raw text using a font that does - but wait let's try
-        # just writing the text with fpdf2's best effort
-        pdf.set_font("Helvetica", size=12)
+        # Add each line
         lines = text.split("\n")
         for line in lines:
             if line.strip():
-                pdf.multi_cell(0, 10, txt=line)
+                # Escape any HTML-like characters
+                safe_line = line.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+                p = Paragraph(safe_line, styles["BodyText"])
+                story.append(p)
             else:
-                pdf.ln(10)
+                story.append(Spacer(1, 12))
         
-        # Generate PDF bytes
-        pdf_output = pdf.output(dest='S')
-        buffer = io.BytesIO(pdf_output.encode('latin1'))
+        # Build the PDF
+        doc.build(story)
         buffer.seek(0)
         
         return send_file(
@@ -146,16 +144,8 @@ def download_pdf():
             mimetype="application/pdf"
         )
     except Exception as e:
-        print(f"PDF Error: {str(e)}")  # Print to server log
-        # Fallback: return the text as plain text file if PDF fails
-        buffer = io.BytesIO(text.encode('utf-8'))
-        buffer.seek(0)
-        return send_file(
-            buffer,
-            as_attachment=True,
-            download_name="geez_ocr_output.txt",
-            mimetype="text/plain"
-        )
+        print(f"PDF Error: {str(e)}")
+        return jsonify({"error": str(e)}), 500
 
 
 if __name__ == "__main__":
