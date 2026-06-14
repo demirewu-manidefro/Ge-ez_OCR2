@@ -3,51 +3,80 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ge'ez OCR - About</title>
+    <title>About - Ge'ez OCR AI</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
     <nav>
         <a href="/" class="logo">
-            <i class="fas fa-file-alt"></i>
-            Ge'ez OCR
+            <i class="fas fa-brain"></i>
+            Ge'ez OCR AI
         </a>
         <ul>
             <li><a href="/">Home</a></li>
-            <li><a href="/about">About</a></li>
+            <li><a href="/about" class="active">About</a></li>
             <li><a href="/github">GitHub</a></li>
         </ul>
+        <div class="nav-right">
+            <button class="theme-toggle" id="themeToggle">
+                <i class="fas fa-moon"></i>
+            </button>
+            <div class="profile-icon">
+                <i class="fas fa-user"></i>
+            </div>
+        </div>
     </nav>
 
-    <main>
-        <div class="card about-content">
-            <h1><i class="fas fa-info-circle"></i> About Ge'ez OCR</h1>
-            
-            <h2>Project Overview</h2>
-            <p>This project aims to digitize Ge'ez manuscripts using modern AI technology. Ge'ez is an ancient Semitic language used in Ethiopian and Eritrean religious and historical texts.</p>
+    <div class="hero">
+        <h1>About Ge'ez OCR AI</h1>
+        <p>Digitizing cultural heritage with cutting-edge AI technology</p>
+    </div>
 
-            <h2>How It Works</h2>
-            <ul>
-                <li>Uses a fine-tuned TrOCR (Transformer-based Optical Character Recognition) model</li>
-                <li>Supports full-page recognition by segmenting pages into individual lines</li>
-                <li>Each line is processed separately for improved accuracy</li>
-                <li>Results are combined with proper line breaks</li>
-            </ul>
-
-            <h2>Technologies Used</h2>
-            <ul>
-                <li><strong>Flask</strong>: Web framework for the application</li>
-                <li><strong>PyTorch</strong>: Deep learning framework</li>
-                <li><strong>Transformers</strong>: HuggingFace library for state-of-the-art NLP models</li>
-                <li><strong>OpenCV</strong>: Computer vision library for image preprocessing and line segmentation</li>
-                <li><strong>ReportLab</strong>: PDF generation</li>
-            </ul>
-        </div>
-    </main>
+    <div class="upload-card" style="text-align: left;">
+        <h2 style="margin-bottom: 1.5rem; color: var(--text-primary);">Project Overview</h2>
+        <p style="margin-bottom: 1rem;">This project aims to digitize Ge'ez manuscripts using modern AI technology. Ge'ez is an ancient Semitic language used in Ethiopian and Eritrean religious and historical texts.</p>
+        
+        <h2 style="margin: 2rem 0 1rem; color: var(--text-primary);">How It Works</h2>
+        <ul style="list-style-type: disc; padding-left: 2rem; margin-bottom: 1rem;">
+            <li>Uses a fine-tuned TrOCR (Transformer-based Optical Character Recognition) model</li>
+            <li>Supports full-page recognition by segmenting pages into individual lines</li>
+            <li>Each line is processed separately for improved accuracy</li>
+            <li>Results are combined with proper line breaks</li>
+        </ul>
+        
+        <h2 style="margin: 2rem 0 1rem; color: var(--text-primary);">Technologies Used</h2>
+        <ul style="list-style-type: disc; padding-left: 2rem;">
+            <li><strong>Flask</strong>: Web framework for the application</li>
+            <li><strong>PyTorch</strong>: Deep learning framework</li>
+            <li><strong>Transformers</strong>: HuggingFace library for state-of-the-art NLP models</li>
+            <li><strong>OpenCV</strong>: Computer vision library for image preprocessing and line segmentation</li>
+        </ul>
+    </div>
 
     <footer>
-        <p>&copy; 2026 Ge'ez OCR Project. All rights reserved.</p>
+        <p>&copy; 2026 Ge'ez OCR AI - Intelligent Manuscript Recognition System. All rights reserved.</p>
     </footer>
+
+    <script>
+        const themeToggle = document.getElementById('themeToggle');
+        const savedTheme = localStorage.getItem('theme');
+        
+        if (savedTheme === 'dark') {
+            document.body.classList.add('dark-mode');
+            themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+            if (document.body.classList.contains('dark-mode')) {
+                themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+                localStorage.setItem('theme', 'dark');
+            } else {
+                themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
+                localStorage.setItem('theme', 'light');
+            }
+        });
+    </script>
 </body>
 </html>
