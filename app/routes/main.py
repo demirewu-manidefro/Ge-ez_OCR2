@@ -170,33 +170,40 @@ def get_dataset():
 
 @bp.route('/download_dataset', methods=['GET'])
 def download_dataset():
-    import csv
+    import zipfile
     import io
+    import os
     from flask import send_file
     
     try:
         entries = OCRDataset.query.order_by(OCRDataset.created_at.desc()).all()
         
-        # Create in-memory CSV
-        buffer = io.StringIO()
-        writer = csv.writer(buffer)
+        # Create in-memory ZIP file
+        zip_buffer = io.BytesIO()
         
-        # Write header
-        writer.writerow(['image_path', 'ground_truth'])
+        with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zipf:
+            for idx, entry in enumerate(entries):
+                # Get the image path from static/crops
+                img_filename = os.path.basename(entry.image_path)
+                img_path = os.path.join(current_app.config['CROP_FOLDER'], img_filename)
+                
+                if os.path.exists(img_path):
+                    # Add image to zip with simpler filename
+                    arc_img_name = f"img_{idx}.png"
+                    zipf.write(img_path, arcname=arc_img_name)
+                    
+                    # Add corresponding text file
+                    txt_filename = f"img_{idx}.gt.txt"
+                    txt_content = entry.ground_truth or ''
+                    zipf.writestr(txt_filename, txt_content)
         
-        # Write rows
-        for entry in entries:
-            writer.writerow([entry.image_path, entry.ground_truth or ''])
-        
-        # Prepare for download
-        buffer.seek(0)
-        byte_buffer = io.BytesIO(buffer.getvalue().encode('utf-8'))
+        zip_buffer.seek(0)
         
         return send_file(
-            byte_buffer,
+            zip_buffer,
             as_attachment=True,
-            download_name='geez_ocr_dataset.csv',
-            mimetype='text/csv'
+            download_name='geez_ocr_dataset.zip',
+            mimetype='application/zip'
         )
         
     except Exception as e:
