@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Register - Ge'ez OCR AI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+    <style>
+        body {
+            font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background-color: var(--bg-light);
+            color: var(--text-primary);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        body.dark-mode {
+            background-color: var(--dark-bg);
+            color: var(--dark-text);
+        }
+
+        nav {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        body.dark-mode nav {
+            background: rgba(15, 23, 42, 0.7);
+            border-bottom: 1px solid var(--dark-border);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-decoration: none;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        body.dark-mode .logo {
+            color: var(--dark-text);
+        }
+
+        .logo i {
+            color: var(--emerald-green);
+            font-size: 1.75rem;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .theme-toggle {
+            background: none;
+            border: none;
+            font-size: 1.25rem;
+            cursor: pointer;
+            color: var(--text-muted);
+            transition: all 0.3s ease;
+        }
+
+        .theme-toggle:hover {
+            color: var(--emerald-green);
+            transform: rotate(15deg);
+        }
+
+        /* Auth Layout styling */
+        .auth-wrapper {
+            position: relative;
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 3rem 1.5rem;
+            overflow: hidden;
+            background: radial-gradient(circle at 10% 10%, rgba(99, 102, 241, 0.03) 0%, transparent 40%),
+                        radial-gradient(circle at 90% 90%, rgba(16, 185, 129, 0.03) 0%, transparent 40%);
+        }
+
+        body.dark-mode .auth-wrapper {
+            background: radial-gradient(circle at 10% 10%, rgba(99, 102, 241, 0.08) 0%, transparent 50%),
+                        radial-gradient(circle at 90% 90%, rgba(16, 185, 129, 0.08) 0%, transparent 50%);
+        }
+
+        /* Background glow elements */
+        .glow-blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(90px);
+            opacity: 0.25;
+            z-index: 0;
+            pointer-events: none;
+            animation: float-blob 25s infinite alternate ease-in-out;
+        }
+
+        body.dark-mode .glow-blob {
+            opacity: 0.35;
+        }
+
+        .blob-1 {
+            width: 320px;
+            height: 320px;
+            background: var(--indigo-blue);
+            top: 15%;
+            left: 20%;
+        }
+
+        .blob-2 {
+            width: 280px;
+            height: 280px;
+            background: var(--emerald-green);
+            bottom: 15%;
+            right: 20%;
+            animation-delay: -6s;
+        }
+
+        .blob-3 {
+            width: 220px;
+            height: 220px;
+            background: #8b5cf6;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            animation-delay: -12s;
+        }
+
+        @keyframes float-blob {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(50px, 30px) scale(1.15); }
+        }
+
+        .auth-container {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 450px;
+            background: rgba(255, 255, 255, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.45);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border-radius: 24px;
+            padding: 3rem 2.5rem;
+            box-shadow: 0 20px 40px rgba(15, 23, 42, 0.04), 
+                        0 1px 3px rgba(15, 23, 42, 0.02);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body.dark-mode .auth-container {
+            background: rgba(17, 24, 39, 0.55);
+            border-color: rgba(255, 255, 255, 0.06);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
+        }
+
+        .auth-container:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 30px 60px rgba(15, 23, 42, 0.08),
+                        0 0 1px rgba(15, 23, 42, 0.04);
+        }
+
+        body.dark-mode .auth-container:hover {
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.55),
+                        0 0 1px rgba(255, 255, 255, 0.06);
+        }
+
+        .auth-header {
+            text-align: center;
+            margin-bottom: 2.2rem;
+        }
+
+        .auth-header .icon-wrap {
+            width: 60px;
+            height: 60px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, var(--emerald-green), var(--indigo-blue));
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.75rem;
+            margin-bottom: 1.25rem;
+            box-shadow: 0 8px 20px rgba(99, 102, 241, 0.25);
+            animation: pulse-glow 3s infinite ease-in-out;
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 8px 20px rgba(99, 102, 241, 0.25); }
+            50% { box-shadow: 0 8px 28px rgba(16, 185, 129, 0.4); }
+        }
+
+        .auth-header h1 {
+            font-size: 2.25rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, var(--text-primary), #334155);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        body.dark-mode .auth-header h1 {
+            background: linear-gradient(135deg, var(--dark-text), #94a3b8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .auth-header p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        body.dark-mode .auth-header p {
+            color: var(--dark-muted);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--text-primary);
+            transition: color 0.3s;
+        }
+
+        body.dark-mode .form-group label {
+            color: var(--dark-text);
+        }
+
+        .input-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-container i {
+            position: absolute;
+            left: 1.25rem;
+            color: var(--text-muted);
+            transition: color 0.3s, transform 0.3s;
+            font-size: 1rem;
+            z-index: 2;
+        }
+
+        body.dark-mode .input-container i {
+            color: var(--dark-muted);
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 1rem 1.25rem 1rem 3rem;
+            border: 1.5px solid var(--border-color);
+            border-radius: 14px;
+            font-size: 0.95rem;
+            font-family: inherit;
+            background: var(--card-white);
+            color: var(--text-primary);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body.dark-mode .form-group input, body.dark-mode .form-group select {
+            background: #0f172a;
+            border-color: rgba(255, 255, 255, 0.08);
+            color: var(--dark-text);
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: var(--indigo-blue);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.12);
+            background: var(--card-white);
+        }
+
+        body.dark-mode .form-group input:focus, body.dark-mode .form-group select:focus {
+            border-color: var(--indigo-blue);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.25);
+            background: #0f172a;
+        }
+
+        .form-group input:focus + i, .form-group select:focus + i {
+            color: var(--indigo-blue);
+            transform: scale(1.1);
+        }
+
+        /* Customize select drop-down arrow */
+        .form-group select {
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            cursor: pointer;
+            padding-right: 2.5rem;
+        }
+
+        .select-wrapper {
+            position: relative;
+            width: 100%;
+        }
+
+        .select-wrapper::after {
+            content: "\f0d7";
+            font-family: "Font Awesome 5 Free";
+            font-weight: 900;
+            position: absolute;
+            right: 1.25rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            pointer-events: none;
+            font-size: 1rem;
+            transition: color 0.3s;
+        }
+
+        body.dark-mode .select-wrapper::after {
+            color: var(--dark-muted);
+        }
+
+        .select-wrapper select:focus + i + .select-wrapper::after {
+            color: var(--indigo-blue);
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 1rem;
+            border: none;
+            border-radius: 14px;
+            font-size: 1rem;
+            font-weight: 700;
+            color: white;
+            background: linear-gradient(135deg, var(--indigo-blue), #4f46e5);
+            box-shadow: 0 8px 20px rgba(99, 102, 241, 0.2);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 25px rgba(99, 102, 241, 0.35);
+            background: linear-gradient(135deg, #4f46e5, #4338ca);
+        }
+
+        .btn-submit:active {
+            transform: translateY(0);
+        }
+
+        .flash-messages {
+            margin-bottom: 1.5rem;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        .flash-message {
+            padding: 1rem 1.25rem;
+            border-radius: 14px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+            border: 1px solid transparent;
+        }
+
+        .flash-message.success {
+            background: rgba(16, 185, 129, 0.08);
+            color: #047857;
+            border-color: rgba(16, 185, 129, 0.2);
+        }
+
+        body.dark-mode .flash-message.success {
+            background: rgba(16, 185, 129, 0.15);
+            color: #34d399;
+        }
+
+        .flash-message.error {
+            background: rgba(239, 68, 68, 0.08);
+            color: #b91c1c;
+            border-color: rgba(239, 68, 68, 0.2);
+        }
+
+        body.dark-mode .flash-message.error {
+            background: rgba(239, 68, 68, 0.15);
+            color: #f87171;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .auth-footer {
+            text-align: center;
+            margin-top: 2rem;
+            font-size: 0.95rem;
+            color: var(--text-muted);
+        }
+
+        body.dark-mode .auth-footer {
+            color: var(--dark-muted);
+        }
+
+        .auth-footer a {
+            color: var(--indigo-blue);
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.2s;
+        }
+
+        .auth-footer a:hover {
+            color: var(--emerald-green);
+            text-decoration: underline;
+        }
+
+        footer {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-muted);
+            border-top: 1px solid var(--border-color);
+            background: rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        body.dark-mode footer {
+            color: var(--dark-muted);
+            border-top-color: var(--dark-border);
+            background: rgba(15, 23, 42, 0.4);
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="/" class="logo">
+            <i class="fas fa-brain"></i>
+            Ge'ez OCR AI
+        </a>
+        <div class="nav-right">
+            <button class="theme-toggle" id="themeToggle">
+                <i class="fas fa-moon"></i>
+            </button>
+        </div>
+    </nav>
+
+    <div class="auth-wrapper">
+        <div class="glow-blob blob-1"></div>
+        <div class="glow-blob blob-2"></div>
+        <div class="glow-blob blob-3"></div>
+
+        <div class="auth-container">
+            <div class="auth-header">
+                <div class="icon-wrap">
+                    <i class="fas fa-user-plus"></i>
+                </div>
+                <h1>Create Account</h1>
+                <p>Register to participate in Ge'ez OCR annotation</p>
+            </div>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <div class="flash-messages">
+                        {% for category, message in messages %}
+                            <div class="flash-message {{ category }}">
+                                <i class="fas {% if category == 'success' %}fa-check-circle{% else %}fa-exclamation-circle{% endif %}"></i>
+                                <span>{{ message }}</span>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+
+            <form method="POST" action="{{ url_for('main.register') }}">
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <div class="input-container">
+                        <input type="text" id="username" name="username" required placeholder="Choose a username" autocomplete="username" />
+                        <i class="fas fa-user"></i>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <div class="input-container">
+                        <input type="email" id="email" name="email" required placeholder="Enter your email" autocomplete="email" />
+                        <i class="fas fa-envelope"></i>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <div class="input-container">
+                        <input type="password" id="password" name="password" required placeholder="Create a password (min. 6 chars)" minlength="6" autocomplete="new-password" />
+                        <i class="fas fa-lock"></i>
+                    </div>
+                </div>
+                <button type="submit" class="btn-submit">
+                    <i class="fas fa-user-plus"></i> Sign Up
+                </button>
+            </form>
+
+            <div class="auth-footer">
+                <p>Already have an account? <a href="{{ url_for('main.login') }}">Sign in here</a></p>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2026 Ge'ez OCR AI - Intelligent Manuscript Recognition System. All rights reserved.</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Theme toggle logic
+            const themeToggle = document.getElementById('themeToggle');
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark') {
+                document.body.classList.add('dark-mode');
+                if (themeToggle) themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+            }
+            if (themeToggle) {
+                themeToggle.addEventListener('click', () => {
+                    document.body.classList.toggle('dark-mode');
+                    if (document.body.classList.contains('dark-mode')) {
+                        themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+                        localStorage.setItem('theme', 'dark');
+                    } else {
+                        themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
+                        localStorage.setItem('theme', 'light');
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

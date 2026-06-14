@@ -242,6 +242,15 @@ body.dark-mode .upload-zone p {
     box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);
 }
 
+.btn-primary:disabled,
+.btn-primary.btn-disabled {
+    background: linear-gradient(135deg, #64748B, #475569) !important;
+    cursor: not-allowed !important;
+    transform: none !important;
+    box-shadow: none !important;
+    opacity: 0.6;
+}
+
 .btn-secondary {
     background: transparent;
     color: var(--text-muted);
