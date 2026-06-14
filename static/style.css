@@ -43,8 +43,7 @@ nav {
     border-bottom: 1px solid var(--border-color);
     padding: 1rem 2rem;
     display: flex;
-    justify-content: flex-start;
-    gap: 2rem;
+    justify-content: space-between;
     align-items: center;
 }
 
@@ -77,6 +76,8 @@ nav ul {
     display: flex;
     gap: 2rem;
     align-items: center;
+    margin-left: auto;
+    margin-right: 2rem;
 }
 
 nav ul li a {
@@ -447,56 +448,6 @@ body.dark-mode .progress-bar {
     40% { transform: scale(1); }
 }
 
-/* ========== Stats Cards ========== */
-.stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1.5rem;
-    margin-top: 3rem;
-    max-width: 1200px;
-    margin-left: auto;
-    margin-right: auto;
-    padding: 0 2rem 3rem;
-}
-
-.stat-card {
-    background: linear-gradient(135deg, var(--card-white), var(--bg-light));
-    border-radius: 16px;
-    padding: 1.5rem;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.05);
-    transition: all 0.3s ease;
-}
-
-body.dark-mode .stat-card {
-    background: linear-gradient(135deg, var(--dark-card), #020617);
-}
-
-.stat-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-}
-
-.stat-icon {
-    font-size: 2rem;
-    color: var(--emerald-green);
-    margin-bottom: 0.75rem;
-}
-
-.stat-number {
-    font-size: 2rem;
-    font-weight: 800;
-    margin-bottom: 0.25rem;
-}
-
-.stat-label {
-    color: var(--text-muted);
-    font-size: 0.9rem;
-}
-
-body.dark-mode .stat-label {
-    color: var(--dark-muted);
-}
-
 /* ========== Message ========== */
 .message {
     margin: 1rem 0;
@@ -541,6 +492,8 @@ body.dark-mode footer {
         width: 100%;
         justify-content: center;
         margin-top: 1rem;
+        margin-left: 0;
+        margin-right: 0;
         gap: 1.5rem;
     }
     
