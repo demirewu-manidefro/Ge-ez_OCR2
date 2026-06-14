@@ -5,8 +5,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const browseBtn = document.getElementById('browseBtn');
     const uploadBtn = document.getElementById('uploadBtn');
     const preview = document.getElementById('preview');
-    const resultImage = document.getElementById('resultImage');
-    const result = document.getElementById('result');
     const clearBtn = document.getElementById('clearBtn');
     const clearAllBtn = document.getElementById('clearAllBtn');
     const copyBtn = document.getElementById('copyBtn');
@@ -18,7 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const convertBtnGroup = document.getElementById('convertBtnGroup');
     const progressFill = document.getElementById('progressFill');
     const message = document.getElementById('message');
-    const statTime = document.getElementById('statTime');
+    const linesContainer = document.getElementById('linesContainer');
 
     // Step elements
     const step1 = document.getElementById('step1');
@@ -27,6 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const step4 = document.getElementById('step4');
 
     // ========== State ==========
+    let currentResults = [];
     let currentText = '';
 
     // ========== Theme Toggle ==========
@@ -90,7 +89,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 preview.src = event.target.result;
                 preview.style.display = 'block';
             }
-            if (resultImage) resultImage.src = event.target.result;
             if (convertBtnGroup) convertBtnGroup.style.display = 'flex';
             if (resultsSection) resultsSection.style.display = 'none';
             if (loadingSection) loadingSection.style.display = 'none';
@@ -108,8 +106,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            const startTime = Date.now();
-            
             // Show loading UI
             if (loadingSection) loadingSection.style.display = 'block';
             if (resultsSection) resultsSection.style.display = 'none';
@@ -119,42 +115,36 @@ document.addEventListener('DOMContentLoaded', () => {
             
             // Reset steps
             resetSteps();
-            animateStep(step1, 20);
-            
-            const formData = new FormData();
-            formData.append('file', file);
+            animateStep(step1, 25);
 
             try {
-                const response = await fetch('/predict', {
+                const formData = new FormData();
+                formData.append('file', file);
+
+                const response = await fetch('/upload', {
                     method: 'POST',
                     body: formData
                 });
-                
-                animateStep(step2, 40);
-                await delay(500);
-                
-                animateStep(step3, 70);
-                await delay(500);
-                
+
+                animateStep(step2, 50);
+                await delay(300);
+
+                animateStep(step3, 75);
+                await delay(300);
+
                 const data = await response.json();
-                
                 animateStep(step4, 100);
-                
+
                 if (data.error) {
                     showMessage(data.error, 'error');
                 } else {
-                    currentText = data.text;
-                    if (result) result.value = data.text;
-                    
-                    // Update stats
-                    const endTime = Date.now();
-                    const timeTaken = ((endTime - startTime) / 1000).toFixed(1);
-                    if (statTime) statTime.textContent = `${timeTaken}s`;
-                    
+                    currentResults = data.results;
+                    renderLines();
+                    currentText = currentResults.map(r => r.predicted_text).join('\n');
                     await delay(300);
                     if (loadingSection) loadingSection.style.display = 'none';
                     if (resultsSection) resultsSection.style.display = 'block';
-                    showMessage('Text recognized successfully!', 'success');
+                    showMessage('Text recognized and saved to database!', 'success');
                 }
             } catch (error) {
                 showMessage(error.message, 'error');
@@ -163,6 +153,52 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+
+    function renderLines() {
+        if (!linesContainer) return;
+        linesContainer.innerHTML = '';
+        currentResults.forEach(line => {
+            const lineDiv = document.createElement('div');
+            lineDiv.className = 'line-item';
+            lineDiv.style.cssText = 'background: var(--bg-light); border-radius:12px; padding:1.5rem; display:flex; gap:1.5rem; align-items:flex-start;';
+            lineDiv.innerHTML = `
+                <img src="${line.image_path}" alt="Line image" style="max-width:300px; border-radius:8px; height:auto;" />
+                <div style="flex:1; display:flex; flex-direction:column; gap:0.75rem;">
+                    <label style="font-weight:600; color:var(--text-muted);">Predicted Text (Edit to correct):</label>
+                    <textarea id="text-${line.id}" style="width:100%; min-height:80px; padding:1rem; border:1px solid var(--border-color); border-radius:8px; font-family:inherit; font-size:1rem; resize:vertical;">${line.predicted_text}</textarea>
+                    <div style="display:flex; gap:0.75rem;">
+                        <button class="btn-primary" onclick="saveLine(${line.id})" style="padding:0.5rem 1.25rem; font-size:0.9rem;">
+                            <i class="fas fa-save"></i> Save Correction
+                        </button>
+                    </div>
+                </div>
+            `;
+            linesContainer.appendChild(lineDiv);
+        });
+    }
+
+    window.saveLine = async (id) => {
+        const textarea = document.getElementById(`text-${id}`);
+        if (!textarea) return;
+        try {
+            const response = await fetch('/save_label', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    id: id,
+                    ground_truth: textarea.value
+                })
+            });
+            const data = await response.json();
+            if (data.error) {
+                showMessage(data.error, 'error');
+            } else {
+                showMessage('Correction saved to database!', 'success');
+            }
+        } catch (error) {
+            showMessage(error.message, 'error');
+        }
+    };
 
     // ========== Button Actions ==========
     if (clearBtn) {
@@ -179,8 +215,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (resultsSection) resultsSection.style.display = 'none';
         if (loadingSection) loadingSection.style.display = 'none';
         if (convertBtnGroup) convertBtnGroup.style.display = 'none';
-        if (result) result.value = '';
+        currentResults = [];
         currentText = '';
+        if (linesContainer) linesContainer.innerHTML = '';
         if (progressFill) progressFill.style.width = '0';
         resetSteps();
         hideMessage();
@@ -256,32 +293,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function animateStep(stepElement, progress) {
         if (!progressFill) return;
-        // Mark previous steps as completed
-        if (stepElement === step1) {
-            if (step1) {
-                step1.classList.add('completed');
-                step1.classList.add('active');
-            }
-        } else if (stepElement === step2) {
+        if (stepElement === step1 && step1) {
+            step1.classList.add('completed');
+            step1.classList.add('active');
+        } else if (stepElement === step2 && step2) {
             if (step1) step1.classList.remove('active');
-            if (step2) {
-                step2.classList.add('completed');
-                step2.classList.add('active');
-            }
-        } else if (stepElement === step3) {
+            step2.classList.add('completed');
+            step2.classList.add('active');
+        } else if (stepElement === step3 && step3) {
             if (step2) step2.classList.remove('active');
-            if (step3) {
-                step3.classList.add('completed');
-                step3.classList.add('active');
-            }
-        } else if (stepElement === step4) {
+            step3.classList.add('completed');
+            step3.classList.add('active');
+        } else if (stepElement === step4 && step4) {
             if (step3) step3.classList.remove('active');
-            if (step4) {
-                step4.classList.add('completed');
-                step4.classList.add('active');
-            }
+            step4.classList.add('completed');
+            step4.classList.add('active');
         }
-        
         progressFill.style.width = `${progress}%`;
     }
 
