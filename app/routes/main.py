@@ -110,7 +110,7 @@ def upload_image():
             dataset_entry = OCRDataset(
                 image_path=f"/static/crops/{crop_filename}",
                 predicted_text=predicted_text,
-                ground_truth=None,
+                ground_truth=predicted_text,  # Set initial ground truth to prediction
                 confidence_score=None,
                 model_name=current_app.config['MODEL_NAME']
             )
@@ -164,6 +164,40 @@ def get_dataset():
             'count': len(entries),
             'dataset': [entry.to_dict() for entry in entries]
         }), 200
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@bp.route('/download_dataset', methods=['GET'])
+def download_dataset():
+    import csv
+    import io
+    from flask import send_file
+    
+    try:
+        entries = OCRDataset.query.order_by(OCRDataset.created_at.desc()).all()
+        
+        # Create in-memory CSV
+        buffer = io.StringIO()
+        writer = csv.writer(buffer)
+        
+        # Write header
+        writer.writerow(['image_path', 'ground_truth'])
+        
+        # Write rows
+        for entry in entries:
+            writer.writerow([entry.image_path, entry.ground_truth or ''])
+        
+        # Prepare for download
+        buffer.seek(0)
+        byte_buffer = io.BytesIO(buffer.getvalue().encode('utf-8'))
+        
+        return send_file(
+            byte_buffer,
+            as_attachment=True,
+            download_name='geez_ocr_dataset.csv',
+            mimetype='text/csv'
+        )
         
     except Exception as e:
         return jsonify({'error': str(e)}), 500

@@ -278,6 +278,31 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    if (document.getElementById('downloadDatasetBtn')) {
+        document.getElementById('downloadDatasetBtn').addEventListener('click', async () => {
+            try {
+                const response = await fetch('/download_dataset');
+                
+                if (!response.ok) {
+                    throw new Error('Failed to download dataset');
+                }
+                
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'geez_ocr_dataset.csv';
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+                showMessage('Dataset downloaded successfully!', 'success');
+            } catch (error) {
+                showMessage(error.message, 'error');
+            }
+        });
+    }
+
     // ========== Helper Functions ==========
     function showMessage(text, type) {
         if (!message) return;
