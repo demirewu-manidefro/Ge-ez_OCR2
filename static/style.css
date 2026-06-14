@@ -43,7 +43,8 @@ nav {
     border-bottom: 1px solid var(--border-color);
     padding: 1rem 2rem;
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-start;
+    gap: 2rem;
     align-items: center;
 }
 

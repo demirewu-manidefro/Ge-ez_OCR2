@@ -18,9 +18,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const convertBtnGroup = document.getElementById('convertBtnGroup');
     const progressFill = document.getElementById('progressFill');
     const message = document.getElementById('message');
-
-    // Stats elements
-    const statImages = document.getElementById('statImages');
     const statTime = document.getElementById('statTime');
 
     // Step elements
@@ -31,8 +28,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ========== State ==========
     let currentText = '';
-    let imagesProcessed = parseInt(localStorage.getItem('imagesProcessed') || '0');
-    if (statImages) statImages.textContent = imagesProcessed;
 
     // ========== Theme Toggle ==========
     const savedTheme = localStorage.getItem('theme');
@@ -155,10 +150,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     const endTime = Date.now();
                     const timeTaken = ((endTime - startTime) / 1000).toFixed(1);
                     if (statTime) statTime.textContent = `${timeTaken}s`;
-                    
-                    imagesProcessed++;
-                    if (statImages) statImages.textContent = imagesProcessed;
-                    localStorage.setItem('imagesProcessed', imagesProcessed.toString());
                     
                     await delay(300);
                     if (loadingSection) loadingSection.style.display = 'none';
