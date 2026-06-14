@@ -1,5 +1,7 @@
-flask
+﻿flask
 transformers
 torch
 pillow
 safetensors
+opencv-python
+numpy
