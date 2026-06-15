@@ -10,3 +10,4 @@ safetensors
 opencv-python
 numpy
 reportlab
+gunicorn

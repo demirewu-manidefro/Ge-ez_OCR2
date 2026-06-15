@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: new_ocr
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn run:app
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.10.0 # Change this to your local Python version if needed
+      - key: FLASK_ENV
+        value: production
